@@ -89,7 +89,7 @@ init([]) ->
 	},
 	{ok, S}.
 
-
+%% translate msg with filters
 handle_cast({notify, Event, Store, Elem}, #state{procs=Procs, filters=Filters} = S) ->
 	Msg = {vol_event, Event, Store, Elem},
 	FinalMsg = case orddict:find(Store, Filters) of

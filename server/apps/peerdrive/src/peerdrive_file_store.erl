@@ -169,7 +169,7 @@ handle_call({peek, RId}, From, S) ->
 	{User, _} = From,
 	{Reply, S2} = do_peek(RId, User, S),
 	{reply, Reply, S2};
-
+%% tell request handler
 handle_call({create, Type, Creator}, From, S) ->
 	{User, _} = From,
 	{Reply, S2} = do_create(Type, Creator, User, S),
@@ -397,7 +397,7 @@ do_peek(RId, User, #state{rev_tbl=RevTbl} = S) ->
 
 
 do_create(Type, Creator, User, S) ->
-	DId = crypto:rand_bytes(16),
+	DId = crypto:rand_bytes(16), %% generate 16bytes ID
 	Rev = #rev{data=?REV_DATA_EMPTY, type=Type, creator=Creator,
 		crtime=peerdrive_util:get_time()},
 	ok = dets:insert(S#state.part_tbl, {?REV_DATA_EMPTY_HASH, ?REV_DATA_EMPTY_BIN}),
@@ -993,7 +993,7 @@ start_writer(DId, PreRId, Rev, User, S) ->
 		peerdrive_file_store_io:start_link(DId, PreRId, Rev, User),
 	{Reply, S4}.
 
-
+%% load store
 load_store(#state{path=Path} = S) ->
 	S2 = case file:consult(Path ++ "/info") of
 		{ok, Info} ->
@@ -1023,7 +1023,7 @@ load_store(#state{path=Path} = S) ->
 	{ok, _} = check(dets:open_file(PeerTbl, [{file, Path ++ "/peers.dets"}])),
 	S2#state{doc_tbl=DocTbl, rev_tbl=RevTbl, part_tbl=PartTbl, peer_tbl=PeerTbl}.
 
-
+%% save all meta data
 save_store(MountState, #state{path=Path} = S) ->
 	ok = dets:sync(S#state.part_tbl),
 	ok = dets:sync(S#state.doc_tbl),
@@ -1087,7 +1087,7 @@ check_root_doc_write(Data, S) ->
 	ok = write_part(PId, BinData, S),
 	#rev_dat{size=size(BinData), hash=PId}.
 
-
+%% write a part of data into file store
 write_part(PId, Data, #state{part_tbl=PartTbl, path=Path}) ->
 	case size(Data) > ?THRESHOLD of
 		true ->

@@ -161,7 +161,7 @@ do_mount(From, Src, Options, Credentials, Type, Label, S) ->
 				case gen_server:call(?MODULE, {reg, Store}, infinity) of
 					ok ->
 						{ok, (Store#store.spec)#peerdrive_store.sid};
-					{error, _} = Error ->
+					{error, _} = Error -> %% if something wrong are happend, we will delete this store
 						peerdrive_store_sup:reap_store(Store#store.ref),
 						Error
 				end;
@@ -185,7 +185,7 @@ do_unmount(WhichSId, #state{stores=Stores} = S) ->
 			{reply, {error, einval}, S}
 	end.
 
-
+%% create store process to do io work
 mount_internal(Src, Options, Creds, Type, Label) ->
 	try
 		ParsedOpt = parse_options(Options),
@@ -214,7 +214,7 @@ mount_internal(Src, Options, Creds, Type, Label) ->
 			{error, Error}
 	end.
 
-
+%% regeister a volman on vol_monitor
 do_reg(#store{pid=Pid, spec=#peerdrive_store{sid=SId, label=Label}} = Store, S) ->
 	#state{stores=Stores} = S,
 	try
